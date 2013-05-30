@@ -1,6 +1,5 @@
 package org.willclark.jist.services;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -8,55 +7,51 @@ import org.bson.types.ObjectId;
 import org.willclark.jist.models.Snippet;
 import org.willclark.jist.models.User;
 import org.willclark.jist.models.Snippet.Language;
-import org.willclark.jist.utils.MongoUtil;
+import org.willclark.jist.utils.ServiceUtil;
 
-import com.mongodb.DBObject;
+import com.google.code.morphia.Datastore;
 
 public class SnippetService {
+		
+	private Datastore ds;
 	
-	public static final String COLLECTION = "SNIPPET";
+	public SnippetService(Datastore ds) {
+		this.ds = ds;
+	}
 	
 	public void create(Snippet snippet) {
-		snippet.setCreatedOn(new Date());			
-		MongoUtil.insert(COLLECTION, snippet);
+		snippet.setCreatedOn(new Date());
+		ds.save(snippet);
 	}
 	
 	public Snippet find(String _id) {
-		DBObject each = MongoUtil.find(COLLECTION, new ObjectId(_id));
-		if (each != null) {
-			return new Snippet(each);
-		}
-		return null;
+		return ds.find(Snippet.class, "_id", new ObjectId(_id)).get();
 	}
 		
 	public List<Snippet> findAll() {
-		List<Snippet> list = new ArrayList<Snippet>(0);		
-		for(DBObject each : MongoUtil.findAll(COLLECTION)) list.add(new Snippet(each));
-		return list;
+		return ds.find(Snippet.class).asList();
 	}
 		
 	public void deleteAll() {
-		MongoUtil.deleteAll(COLLECTION);
+		ds.delete(ds.createQuery(Snippet.class));
 	}
 		
 	public static void main(String... args) {
-		MongoUtil.open();
+		Datastore ds = ServiceUtil.getDatastore();
 		
-		UserService userSvc = new UserService();
+		UserService userSvc = new UserService(ds);
 		userSvc.deleteAll();
 		
 		User user = new User.Builder().setUsername("admin").setEmail("admin@willclark.org").build();		
 		userSvc.create(user);
 		
-		SnippetService snippetSvc = new SnippetService();
+		SnippetService snippetSvc = new SnippetService(ds);
 		snippetSvc.deleteAll();
 		
 		Snippet snippet = new Snippet.Builder(user).setLanguage(Language.JAVA).setCode("...").build();
 		snippetSvc.create(snippet);
 		
 		System.out.println(snippetSvc.findAll());
-		
-		MongoUtil.close();
 	}
 	
 }

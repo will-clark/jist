@@ -4,11 +4,11 @@ import java.util.Date;
 
 import org.bson.types.ObjectId;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.google.code.morphia.annotations.Id;
 
 public abstract class Model {
 
+	@Id
 	protected ObjectId _id;
 
 	protected Date createdOn;
@@ -17,14 +17,6 @@ public abstract class Model {
 	protected Date deletedOn;
 	
 	public Model() {}
-	
-	public Model(DBObject each) {
-		this._id = (ObjectId) each.get("_id");
-		this.createdOn = (Date) each.get("createdOn");
-		this.accessedOn = (Date) each.get("accessedOn");
-		this.updatedOn = (Date) each.get("updatedOn");
-		this.deletedOn = (Date) each.get("deletedOn");
-	}
 	
 	public ObjectId getId() {
 		return _id;
@@ -77,17 +69,5 @@ public abstract class Model {
 		sb.append("deletedOn: ").append(deletedOn).append(", ");
 		return sb.toString();
 	}
-	
-	public abstract BasicDBObject convert();
-	
-	protected BasicDBObject modelConvert() {
-		BasicDBObject basicDBObject = new BasicDBObject();
-		basicDBObject.append("createdOn", createdOn);
-		basicDBObject.append("accessedOn", accessedOn);
-		basicDBObject.append("updatedOn", updatedOn);
-		basicDBObject.append("deletedOn", deletedOn);
-		return basicDBObject;
-	}
-	
 	
 }

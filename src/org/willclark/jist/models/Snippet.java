@@ -1,47 +1,32 @@
 package org.willclark.jist.models;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.types.ObjectId;
-import org.willclark.jist.StringUtil;
-import org.willclark.jist.services.UserService;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Reference;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
+@Entity
 public class Snippet extends Model {
 	
 	public enum Language {
 		JAVA,C,PHP,PYTHON,RUBY,JAVASCRIPT,HTML;
 	}
 	
+	@Embedded
 	private User user;
+	
 	private Language language;
 	private String code;
 	private long views;
+	
+	@Reference 
 	private List<User> favorites;
+	
+	protected Snippet() {}
 	
 	public Snippet(User user) {
 		this.user = user;
-	}
-	
-	public Snippet(DBObject each) {
-		super(each);
-		UserService userSvc = new UserService();
-				
-		this.user = userSvc.find((ObjectId) each.get("user_id"));
-		this.language = Language.valueOf(StringUtil.toString(each.get("language")));
-		this.code = StringUtil.toString(each.get("code"));
-		this.views = Long.parseLong(StringUtil.toString(each.get("views")));
-		this.favorites = new ArrayList<User>(0);
-		
-		String favorites = StringUtil.toString(each.get("favorites"));
-		if (StringUtil.isNotEmpty(favorites)) {
-			for(String user_id : favorites.split(",")) {
-				this.favorites.add(userSvc.find(new ObjectId(user_id)));
-			}
-		}				
 	}
 	
 	@Override
@@ -56,23 +41,6 @@ public class Snippet extends Model {
 		sb.append("favorites: ").append(favorites);
 		sb.append("}");
 		return sb.toString();
-	}
-
-	@Override
-	public BasicDBObject convert() {
-		BasicDBObject basicDBObject = super.modelConvert();
-		basicDBObject.append("user_id", user._id);
-		basicDBObject.append("language", language.name());
-		basicDBObject.append("code", code);
-		basicDBObject.append("views", views);
-		
-		if (favorites != null) {
-			StringBuilder sb = new StringBuilder();
-			for(User each : favorites) sb.append(each._id).append(",");			
-			basicDBObject.append("favorites", sb.toString());
-		}
-		
-		return basicDBObject;
 	}
 
 	public static class Builder {

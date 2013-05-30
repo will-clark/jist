@@ -1,23 +1,12 @@
 package org.willclark.jist.models;
 
-import org.willclark.jist.StringUtil;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 public class User extends Model {
 	
 	private String username;
 	private String email;
 	
 	public User() {}
-	
-	public User(DBObject each) {
-		super(each);
-		this.username = StringUtil.toString(each.get("username"));
-		this.email = StringUtil.toString(each.get("email"));
-	}
-	
+		
 	public String getUsername() {
 		return username;
 	}
@@ -42,13 +31,6 @@ public class User extends Model {
 		sb.append("email: ").append(email);
 		sb.append("}");
 		return sb.toString();
-	}
-		
-	public BasicDBObject convert() {
-		BasicDBObject basicDBObject = super.modelConvert();
-		basicDBObject.append("username", username);
-		basicDBObject.append("email", email);
-		return basicDBObject;
 	}
 	
 	public static class Builder {
